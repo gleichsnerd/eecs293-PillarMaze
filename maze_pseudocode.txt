@@ -1,0 +1,136 @@
+EECS 293
+HW #6
+Adam Gleichsner (amg188)
+
+
+To accomplish the task of finding the optimized path through a matrix of accessible and inaccessible points,
+we use a modified A* algorithm that allows the traversal of one gap in the case of optimization or necessity.
+To do this, we use a unique node to represent the pillar, one which keeps track of both the running distance 
+without using a plank (the g value) and the running distance if a plank is used (the p value). Each node also
+distinguishes between parents from natural pathing (gParent) and those created by use of a plank (pParent).
+
+While there are still nodes in the open set, we select the one with the lowest g + h value or p + h value,
+with a tie resulting in the g + h valued node. If it's not the exit, then we take each neighbor to the
+current node and determine if it's accessible (i.e. there is an existing plank or we haven't planked yet) and,
+if so, it's gValue/gParent or pValue/pParent. If we hit the exit condition, we return a list of each node
+by running through the gParents and pParents when available.
+
+We can determine whether we have used a plank at any point during a path by checking the pValue. If the value
+is not the preset 0, then we have at some point used a plank to get to the node.
+
+Runtime:
+    Worst case: every node traversed in square matrix (n x n), O(n^2)
+    Average case: O(logn) where base is difference between heuristic of path minus the perfect heuristic
+
+
+Test Cases:
+
+    Test 0:
+    Insert a 0x0 matrix, should return failure condition
+
+    Test 1:
+    Insert a 1x1 matrix, should return the only element since we start at the finish
+
+    Test Many:
+
+        Impossible:
+        Insert a NxN matrix where exit is separated by >= 2 gaps, should return failure condition
+
+        Plank Dependent:
+        Insert a NxN matrix where exit is separated by 1 gap, should return path that requires plank placement
+
+        Optimizable:
+        Insert a NxN matrix where path is optimized by placing a plank, should return _an_ optimized path although many may exist
+
+        Optimized:
+        Insert a NxN matrix where the existing path is already optimal, should return that path
+
+
+Pseudocode:
+
+object pillarNode {
+    integer hValue; //The heuristic distance from node to exit
+    integer gValue; //Cost of distance from start to node
+    integer pValue; //Cost of distance from start to node but needs extra plank
+    pillarNode gParent, pParent;
+    ArrayList of pillarNodes planks;
+}
+
+function createPillarNodeNetwork(width, height, plankLayout) 
+    returnSet = set of all the pillar nodes
+    
+    for each pillar (from 0 to width * height - 1)
+        if index is in plank layout (i.e. plank is between index and other pillar, p)
+            new pillarNode
+            add each p to pillarNode.planks
+        else
+            new pillarNode
+        add pillarNode to returnSet
+    end for
+
+    return the returnSet
+end
+
+function shortestPath(startPos, exitPos, pillarSet)
+    
+    openSet = {pillarSet[startPos]}    //Start the algorithm with the starting point as the only element in the set
+    closedSet = {}       //Start the closed set as the empty set
+
+    pillarSet[startPos] hValue <- calculate the H value
+    pillarSet[startPos] gValue <- 0
+    pillarSet[startPos] pValue <- 0
+    pillarSet[startPos] parent <- null
+
+    if pillarSet has no nodes
+        return failure condition (i.e. null)    //There are no pillars to traverse. Looks like it's curtains for Dr. Jones.
+    else if start equals exit
+        return List(start)   //We're already at the exit, so we know the path
+    else
+        while openSet is not empty
+            currentNode = pillarNode in the openSet with the lowest g + h or p + h values
+
+            if currentNode == exit
+                return the path by either following gParent or pParent if pValue is less than gValue
+
+            remove currentNode from openSet
+            add currentNode to closedSet
+
+
+            for each neighbor pillarNode to currentNode
+                if neighbor is accessible (i.e. in pillarNode.planks)
+                    tempGValue = currentNode gValue + 1 //i.e. takes one leap
+                    if currentNode pValue > 0 (i.e. we've used a plank to get here)
+                        tempPValue = currentNode.pValue + 1
+                    else
+                        tempPValue = 0
+                    end if
+                else if currentNode.pValue is 0 (i.e. we haven't used a plank yet)
+                    tempGValue = 0
+                    tempPValue = gValue
+                else
+                    impossible traversal, goto next neighbor
+                end if
+
+                if neighbor is in closedSet    
+                   continue to next neighbor
+                else
+                    set neighbor's pValue and gValue to temp values
+                    if we're not incrementing pValue and either the pillar has no gParent or the gValue is less (i.e. there's a plankless way to get there)
+                        set gParent to currentNode
+                    else we are incrementing pValue
+                        set pParent to currentNode
+                    end if
+
+                    if neighbor is not in openSet
+                        add neighbor to openSet
+                    end if
+
+                end if
+            end for
+        end while
+
+        //If openSet is empty and we haven't already found a path, then there is no path since
+        //we've traversed all pillarNodes
+        return failure condition (i.e. null)
+    end if
+end
