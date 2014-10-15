@@ -4,13 +4,13 @@ import java.util.ArrayList;
 
 public class PillarNode {
 	
-	int id; //
-	int hValue; //Heuristic value, steps away from the exit
-	int gValue; //Number of steps between start node and this node without using planks
-    int pValue; //Number of steps between start node and this node with using a plank
-    PillarNode gParent; //Parent node when plank is not used
-    PillarNode pParent; //Parent node when plank is used
-    ArrayList<Integer> planks; //List of all immediately accessible nodes from the current node
+	private int id; //
+	private int hValue; //Heuristic value, steps away from the exit
+	private int gValue; //Number of steps between start node and this node without using planks
+	private int pValue; //Number of steps between start node and this node with using a plank
+	private PillarNode gParent; //Parent node when plank is not used
+	private PillarNode pParent; //Parent node when plank is used
+	private ArrayList<Integer> planks; //List of all immediately accessible nodes from the current node
  
 	public PillarNode(int id, int hValue, int gValue, int pValue) {
 		this.hValue = hValue;
@@ -20,6 +20,10 @@ public class PillarNode {
 		this.gParent = null;
 		this.pParent = null;
 		this.planks = new ArrayList<Integer>();
+	}
+	
+	public int getID() {
+		return this.id;
 	}
 	
 	public int getHValue() {
@@ -73,7 +77,7 @@ public class PillarNode {
 	}
 	
 	private boolean addPlank(int pillarID) {
-		this.throwExceptionForNullInput(pillarID);
+		this.throwExceptionIfInputNull(pillarID);
 		if(this.planks.contains(pillarID))
 			return false;
 	
@@ -91,7 +95,7 @@ public class PillarNode {
 		return returnBool;
 	}
 	
-	public void throwExceptionForNullInput(Object...objects) throws NullPointerException {
+	private void throwExceptionIfInputNull(Object...objects) throws NullPointerException {
 		for(Object obj: objects) {
 			if(obj == null)
 				throw new NullPointerException("Error: Input is null");
