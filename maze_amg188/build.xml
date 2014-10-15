@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project basedir="." default="test" name="eecs293_p2_amg188">
+<project basedir="." default="test" name="maze_amg188">
 	<property environment="env"/>
 	<property name="junit.output.dir" value="junit"/>
 	<property name="debuglevel" value="source,lines,vars"/>
