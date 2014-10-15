@@ -13,7 +13,7 @@
 		<pathelement location="junit.jar"/>
 		<pathelement location="org.hamcrest.core_1.1.0.v20090501071000.jar"/>
 	</path>
-	<path id="eecs293_p2_amg188.classpath">
+	<path id="maze_amg188.classpath">
 		<pathelement location="bin"/> <!-- where do we put compiled bits? -->
 		<path refid="JUnit4.libraryclasspath"/>
 	</path>
