@@ -8,7 +8,7 @@ import java.util.Set;
 
 /**
  * Maze class
- * @author gleichsnerd
+ * @author Adam Gleichser
  * Given a size of a system of pillars and a layout of planks between these pillars, 
  * Maze has the capabilities of finding the shortest path across this maze with the
  * ability of placing one extra plank at any point to reduce the path length.
@@ -53,7 +53,7 @@ public class Maze {
 		 * @param endPillarID
 		 * @return int - H Value
 		 */
-		public int calculateHValue(int currentPillarID, int endPillarID) {
+		public int calculateHValue(ArrayList<ArrayList<PillarNode>> testPillars, int currentPillarID, int endPillarID) {
 			int returnHValue;
 			
 			//Save old maze arrangement
@@ -104,22 +104,7 @@ public class Maze {
 		 * @param tempPValue
 		 */
 		public void linkNeighborToPath(PillarNode currentPillar, PillarNode neighbor, Set<PillarNode> closedSet, int tempGValue, int tempPValue) {
-			this.throwExceptionIfInputNull(currentPillar, neighbor, closedSet);
-			
-			//If we can actually get to neighbor and it's not in closed set
-			if(this.neighborCanBeTraversed(tempGValue, tempPValue) && !closedSet.contains(neighbor)) {
-				//If we're following a path in which we used our plank
-				if(tempPValue - currentPillar.getPValue() == 1) {
-					neighbor.setGValue(tempGValue);
-					neighbor.setPValue(tempPValue);
-					neighbor.setPParent(currentPillar);
-				//If it's a regular path but this way is cheaper
-				} else if (this.gParentShouldBeSet(neighbor, tempGValue)) {
-					neighbor.setGValue(tempGValue);
-					neighbor.setPValue(tempPValue);
-					neighbor.setGParent(currentPillar);
-				}
-			}
+			Maze.this.linkNeighborToPath(currentPillar, neighbor, closedSet, tempGValue, tempPValue);
 		}
 		
 		/**
@@ -133,11 +118,8 @@ public class Maze {
 		 * @return boolean - true if should be added, false otherwise
 		 */
 		public boolean shouldBeAddedToOpenSet(PillarNode neighbor, Set<PillarNode> openSet, Set<PillarNode> closedSet, int gValue, int pValue) {
-			this.throwExceptionIfInputNull(neighbor, openSet, closedSet);
-			//If we can access it but we've never seen it before
-			if (this.neighborCanBeTraversed(gValue, pValue) && !openSet.contains(neighbor) && !closedSet.contains(neighbor))
-				return true;
-			return false;
+			Boolean shouldBeAdded = Maze.this.shouldBeAddedToOpenSet(neighbor, openSet, closedSet, gValue, pValue);
+			return shouldBeAdded;
 		}
 		
 		/**
@@ -147,10 +129,8 @@ public class Maze {
 		 * @return boolean - true if it can be accessed, false otherwise
 		 */
 		public boolean neighborCanBeTraversed (int gValue, int pValue) {
-			//If gValue and pValue aren't negative, then we can get there
-			if (gValue >= 0 || pValue >=0)
-				return true;
-			return false;
+			Boolean isTraversable = Maze.this.neighborCanBeTraversed(gValue, pValue);
+			return isTraversable;
 		}
 		
 		/**
@@ -161,11 +141,8 @@ public class Maze {
 		 * @return boolean - true if cheaper, false otherwise
 		 */
 		public boolean gParentShouldBeSet(PillarNode neighbor, int gValue) {
-			this.throwExceptionIfInputNull(neighbor);
-			//If neighbor hasn't been pathed yet or it's cheaper to go this way
-			if (neighbor.getGParent() == null || neighbor.getGValue() < 0 || gValue < neighbor.getGValue())
-				return true;
-			return false;
+			Boolean shouldBeSet = Maze.this.gParentShouldBeSet(neighbor, gValue);
+			return shouldBeSet;
 		}
 		
 		/**
@@ -173,38 +150,20 @@ public class Maze {
 		 * @param pillar
 		 * @return ArrayList<PillarNode> - List of all neighbors
 		 */
-		public ArrayList<PillarNode> getNeighbors(PillarNode pillar) {
-			ArrayList<PillarNode> neighbors = new ArrayList<PillarNode>();
+		public ArrayList<PillarNode> getNeighbors(ArrayList<ArrayList<PillarNode>> testPillars, PillarNode pillar) {
+			ArrayList<PillarNode> neighbors;
 			
-			this.throwExceptionIfInputNull(pillar);
+			//Save old maze arrangement
+			ArrayList<ArrayList<PillarNode>> oldPillars = pillars;
 			
-			int height = pillars.size();
-			int width = pillars.get(0).size();
-			int id = pillar.getID();
-			int y = (int) Math.floor(id/height);
-			int x = id - y * height;
+			//Set testing condition
+			pillars = testPillars;
 			
-			//If we're at the bottom of the maze
-			if (y + 1 == height) {
-				neighbors.add(this.getPillarByID(id - width));
-			//If we're at the top of the maze
-			} else if (y == 0) {
-				neighbors.add(this.getPillarByID(id + width));
-			} else {
-				neighbors.add(this.getPillarByID(id - width));
-				neighbors.add(this.getPillarByID(id + width));
-			}
+			//Conduct test
+			neighbors = Maze.this.getNeighbors(pillar);
 			
-			//If we're on the far right of the maze
-			if (x + 1 == width) {
-				neighbors.add(this.getPillarByID(id - 1));
-			//If we're on the far left of the maze
-			} else if (x == 0) {
-				neighbors.add(this.getPillarByID(id + 1));
-			} else {
-				neighbors.add(this.getPillarByID(id - 1));
-				neighbors.add(this.getPillarByID(id + 1));
-			}
+			//Reset maze
+			pillars = oldPillars;
 			
 			return neighbors;
 		}
@@ -217,20 +176,8 @@ public class Maze {
 		 * @return int - tempGValue
 		 */
 		public int calculateGValue(PillarNode currentPillar, PillarNode nextPillar) {
-			int gValue = -1;
-			
-			this.throwExceptionIfInputNull(currentPillar, nextPillar);
-			
-			//If we can access currentPillar without a plank
-			if (currentPillar.getGValue() >= 0) {
-				//If we can access nextPillar without a plank
-				if (currentPillar.canAccess(nextPillar.getID()))
-					gValue = currentPillar.getGValue() + 1;
-				//If we have used a plank before, kill this route
-				else if (currentPillar.getPValue() == 0) 
-					gValue = -1;
-			}
-			return gValue;
+			int returnGValue = Maze.this.calculateGValue(currentPillar, nextPillar);
+			return returnGValue;
 		}
 			
 		/**
@@ -241,24 +188,7 @@ public class Maze {
 		 * @return int - tempPValue
 		 */
 		public int calculatePValue(PillarNode currentPillar, PillarNode nextPillar) {
-			int pValue = -1;
-			
-			this.throwExceptionIfInputNull(currentPillar, nextPillar);
-			
-			//If we can use the plank
-			if (currentPillar.getPValue() >= 0) {
-				//But we don't have to
-				if (currentPillar.canAccess(nextPillar.getID())) {
-					//If we're on a planked path
-					if (currentPillar.getPValue() > 0)
-						pValue = currentPillar.getPValue() + 1;
-					else
-						pValue = 0; 
-				//If we have to use our plank
-				} else if (currentPillar.getPValue() == 0)
-					pValue = currentPillar.getGValue() + 1;
-			}
-			
+			int pValue = Maze.this.calculatePValue(currentPillar, nextPillar);
 			return pValue;
 		}
 		
@@ -270,28 +200,8 @@ public class Maze {
 		 * @return
 		 */
 		public ArrayList<ArrayList<PillarNode>> createMazePillars(int width, int height, Map<Integer, ArrayList<Integer>> plankLayout) {
-			ArrayList<ArrayList<PillarNode>> returnPillars = new ArrayList<ArrayList<PillarNode>>();
-			ArrayList<Integer> accessiblePillars;
-			ArrayList<PillarNode> tempArrayList;
-			PillarNode newPillar;
-			
-			this.throwExceptionIfInputNull(plankLayout);
-			
-			//For each row
-			for (int y = 0; y < height; y++) {
-				tempArrayList = new ArrayList<PillarNode>();
-				returnPillars.add(y, tempArrayList);
-				//For each column
-				for (int x = 0; x < width; x++) {
-					newPillar = new PillarNode(y * height + x);
-					accessiblePillars = getPillarsAccessibleByPlanks(x, y, width, height, plankLayout);
-					newPillar.addPlanks(accessiblePillars);
-					returnPillars.get(y).add(x, newPillar);
-				}
-			}
-			
+			ArrayList<ArrayList<PillarNode>> returnPillars = Maze.this.createMazePillars(width, height, plankLayout);
 			return returnPillars;
-
 		}
 		
 		/**
@@ -304,34 +214,7 @@ public class Maze {
 		 * @return ArrayList<Integer> - list of accessible ids
 		 */
 		public ArrayList<Integer> getPillarsAccessibleByPlanks(int x, int y, int width, int height, Map<Integer, ArrayList<Integer>> plankLayout) {
-			ArrayList<Integer> returnPillars = new ArrayList<Integer>(); //List of all pillars accessible, identified by number
-			Integer currentPillarID = new Integer(y * height + x);
-			/* Note: Single number id is found by row * height + column, resulting in the following layout
-			 * row _0__1__2__3    <- column
-			 *   0| 0  1  2  3
-			 *   1| 4  5  6  7
-			 *   2| 8  9  10 11
-			 *   3| 12 13 14 15
-			 */
-			this.throwExceptionIfInputNull(plankLayout);
-			
-			if (plankLayout.size() > width * height) {
-				//If we have more pillars in the layout than possible, throw an exception
-				throw new IllegalArgumentException("plankLayout contains more pillars than the maze can hold");
-			} 
-			
-			//If there are planks, grab 'em!
-			if (plankLayout.containsKey(currentPillarID)) {
-				returnPillars = plankLayout.get(currentPillarID);
-				
-				//Check that each plank is adjoining the current pillar
-				for (Integer accessiblePillar: returnPillars) {
-					if (!pillarsAreAdjoining(currentPillarID, accessiblePillar, width, height)) {
-						throw new IllegalArgumentException("plankLayout contains an invalid configuration");
-					}
-				}
-			}
-			
+			ArrayList<Integer> returnPillars = Maze.this.getPillarsAccessibleByPlanks(x, y, width, height, plankLayout);
 			return returnPillars;
 		}
 
@@ -344,10 +227,7 @@ public class Maze {
 		 * @return boolean - true if they are, false otherwise
 		 */
 		public boolean pillarsAreAdjoining(int pillar1ID, int pillar2ID, int width, int height) {
-			//If pillar 2 is directly above or below pillar 1 or if pillar 2 is to the left or right and in the same row as pillar 1
-			if (Math.abs(pillar1ID - pillar2ID) == height || (Math.abs(pillar1ID - pillar2ID) == 1 && Math.floor(pillar1ID/height) == Math.floor(pillar2ID/height)))
-					return true;
-			return false;
+			return Maze.this.pillarsAreAdjoining(pillar1ID, pillar2ID, width, height);
 		}
 		
 		/**
@@ -356,19 +236,25 @@ public class Maze {
 		 * @throws NullPointerException
 		 */
 		public void throwExceptionIfInputNull(Object...objects) throws NullPointerException {
-			for(Object obj: objects) {
-				if(obj == null)
-					throw new NullPointerException("Error: Input is null");
-			}
+			Maze.this.throwExceptionIfInputNull(objects);
 		}
 		
 		/**
 		 * Throws an exception if this.pillars is null or 0x0
 		 * @throws UninitializedObjectException
 		 */
-		public void throwExceptionIfMazeInvalid() throws UninitializedObjectException {
-			if(pillars == null || pillars.size() == 0)
-				throw new UninitializedObjectException("Maze is either null or without pillars");
+		public void throwExceptionIfMazeInvalid(ArrayList<ArrayList<PillarNode>> testPillars) throws UninitializedObjectException {
+			//Save old maze arrangement
+			ArrayList<ArrayList<PillarNode>> oldPillars = pillars;
+			
+			//Set testing condition
+			pillars = testPillars;
+			
+			//Conduct test
+			Maze.this.throwExceptionIfMazeInvalid();
+			
+			//Reset maze
+			pillars = oldPillars;
 		}
 	}
 	

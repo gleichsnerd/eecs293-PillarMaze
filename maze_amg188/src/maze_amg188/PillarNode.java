@@ -18,6 +18,69 @@ public class PillarNode implements Comparable<PillarNode> {
 	private ArrayList<Integer> planks; //List of all immediately accessible nodes from the current node
  
 	/**
+	 * @author Adam Gleichsner
+	 * Helper subclass to allow us to test the private methods
+	 */
+	public class Test {
+		/**
+		 * Private helper that adds a plank 
+		 * @param pillarID
+		 * @return
+		 * @throws NullPointerException - if input is null
+		 */
+		private boolean addPlank(ArrayList<Integer> testPlanks, int pillarID) {
+			
+			Boolean success = false;
+			
+			//Stash old planks
+			ArrayList<Integer> oldPlanks = planks;
+			
+			//Setup testing condition
+			planks = testPlanks;
+			
+			//Perform routine
+			success = PillarNode.this.addPlank(pillarID);
+			
+			//Reset planks
+			planks = oldPlanks;
+			
+			return success;
+		}
+
+		/**
+		 * Helper method that will check a series of inputs and throw an exception
+		 * if any are null
+		 * @param objects - collection of objects to check if null
+		 * @throws NullPointerException
+		 */
+		private void throwExceptionIfInputNull(Object...objects) throws NullPointerException {
+			PillarNode.this.throwExceptionIfInputNull(objects);
+		}
+		
+		/**
+		 * Private helper that compares two nodes and returns whether or not the node
+		 * is cheaper than the other.
+		 * @param otherNode - Node to compare against
+		 * @return boolean - true if this node is cheaper, false otherwise
+		 */
+		private boolean isCheaperThan(PillarNode otherNode) {
+			Boolean isCheaper = PillarNode.this.isCheaperThan(otherNode);
+			return isCheaper;
+		}
+		
+		/**
+		 * Private helper that compares two nodes and, if this g + h equals the other's
+		 * p + h, returns true, noting that this node is preferred.
+		 * @param otherNode - Node to compare against
+		 * @return boolean - true if equal and preferred, false otherwise
+		 */
+		private boolean isPreferredTo(PillarNode otherNode) {
+			Boolean isPreferrable = PillarNode.this.isPreferredTo(otherNode);
+			return isPreferrable;
+		}
+	}
+	
+	/**
 	 * Constructor for PillarNode
 	 * We initialize all other variables as base conditions or impossible states, in the
 	 * case of the values
@@ -231,13 +294,5 @@ public class PillarNode implements Comparable<PillarNode> {
 				this.pValue + hDiff >= otherNode.getPValue())
 			return true;
 		return false;
-	}
-	
-	/**
-	 * @author Adam Gleichsner
-	 * Helper subclass to allow us to test the private methods
-	 */
-	public class Test {
-		
 	}
 }
