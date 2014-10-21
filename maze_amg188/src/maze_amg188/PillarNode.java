@@ -28,7 +28,7 @@ public class PillarNode implements Comparable<PillarNode> {
 		 * @return
 		 * @throws NullPointerException - if input is null
 		 */
-		private boolean addPlank(ArrayList<Integer> testPlanks, int pillarID) {
+		public boolean addPlank(ArrayList<Integer> testPlanks, int pillarID) {
 			
 			Boolean success = false;
 			
@@ -53,7 +53,7 @@ public class PillarNode implements Comparable<PillarNode> {
 		 * @param objects - collection of objects to check if null
 		 * @throws NullPointerException
 		 */
-		private void throwExceptionIfInputNull(Object...objects) throws NullPointerException {
+		public void throwExceptionIfInputNull(Object...objects) throws NullPointerException {
 			PillarNode.this.throwExceptionIfInputNull(objects);
 		}
 		
@@ -63,7 +63,7 @@ public class PillarNode implements Comparable<PillarNode> {
 		 * @param otherNode - Node to compare against
 		 * @return boolean - true if this node is cheaper, false otherwise
 		 */
-		private boolean isCheaperThan(PillarNode otherNode) {
+		public boolean isCheaperThan(PillarNode otherNode) {
 			Boolean isCheaper = PillarNode.this.isCheaperThan(otherNode);
 			return isCheaper;
 		}
@@ -74,7 +74,7 @@ public class PillarNode implements Comparable<PillarNode> {
 		 * @param otherNode - Node to compare against
 		 * @return boolean - true if equal and preferred, false otherwise
 		 */
-		private boolean isPreferredTo(PillarNode otherNode) {
+		public boolean isPreferredTo(PillarNode otherNode) {
 			Boolean isPreferrable = PillarNode.this.isPreferredTo(otherNode);
 			return isPreferrable;
 		}
@@ -153,7 +153,8 @@ public class PillarNode implements Comparable<PillarNode> {
 	 * @param hValue - Value to set to
 	 */
 	public void setHValue(int hValue) {
-		this.hValue = hValue;
+		if (hValue >= 0)
+			this.hValue = hValue;
 	}
 	
 	/**
@@ -161,7 +162,8 @@ public class PillarNode implements Comparable<PillarNode> {
 	 * @param gValue - Value to set to
 	 */
 	public void setGValue(int gValue) {
-		this.gValue = gValue;
+		if (gValue >= 0)
+			this.gValue = gValue;
 	}
 	
 	/**
@@ -169,7 +171,8 @@ public class PillarNode implements Comparable<PillarNode> {
 	 * @param pValue - Value to set to
 	 */
 	public void setPValue(int pValue) {
-		this.pValue = pValue;
+		if (pValue >= 0)
+			this.pValue = pValue;
 	}
 	
 	/**
