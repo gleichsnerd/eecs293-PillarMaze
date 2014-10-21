@@ -24,6 +24,7 @@ public class PillarNode implements Comparable<PillarNode> {
 	 * @param id - unique id based on position in the maze
 	 */
 	public PillarNode(int id) {
+		this.id = id;
 		this.hValue = -1;
 		this.gValue = -1;
 		this.pValue = -1;
@@ -131,9 +132,8 @@ public class PillarNode implements Comparable<PillarNode> {
 	 * @return boolean - true if possible, false otherwise
 	 * @throws NullPointerException - if input is null
 	 */
-	public boolean canAccess(PillarNode pillar) {
-		this.throwExceptionIfInputNull(pillar);
-		if(this.planks.contains(pillar))
+	public boolean canAccess(int pillarID) {
+		if(this.planks.contains(pillarID))
 			return true;
 		return false;
 	}
@@ -231,5 +231,13 @@ public class PillarNode implements Comparable<PillarNode> {
 				this.pValue + hDiff >= otherNode.getPValue())
 			return true;
 		return false;
+	}
+	
+	/**
+	 * @author Adam Gleichsner
+	 * Helper subclass to allow us to test the private methods
+	 */
+	public class Test {
+		
 	}
 }
