@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Defines the project. basedir is where the base directory of the project is, default is the target that gets used when none are specified, and name is the name of the project. -->
-<project basedir="." default="build" name="maze_amg188">
+<project basedir="." default="test" name="maze_amg188">
 	<property environment="env"/>
 	<!-- The below property tags create variables to be used later. -->
 	<property name="junit.output.dir" value="junit"/>
@@ -39,15 +39,16 @@
         </javac>
 
         <!-- You can build from multiple directories, in this case, a folder for tests -->
-		<!--javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
-            <src path="src/tests"/> 
+		<javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
+            <src path="src/"/> 
 			<classpath refid="JUnit4.libraryclasspath"/>
             <classpath refid="maze_amg188.classpath"/> 
-        </javac-->
+        </javac>
     </target>
 
 	<target name="test" depends="build"> <!-- Builds the code via the depends feature, and then runs tests -->
         <mkdir dir="${junit.output.dir}"/>
+		<echo message="Begin testing"/>
         <junit fork="yes" printsummary="withOutAndErr"> <!-- Runs the tests as a forked process -->
             <formatter type="plain"/>
             <batchtest>
@@ -55,7 +56,7 @@
             		<include name="**/*Test.class" /> <!-- Tells it to use any file in any subfolder of the project, so long as that file's name ends in Test.class -->
        			</fileset>
     		</batchtest>
-            <classpath refid="maze_amg188.classpath"/>
+            <classpath refid="JUnit4.libraryclasspath"/>
         </junit>
     </target>
 </project>

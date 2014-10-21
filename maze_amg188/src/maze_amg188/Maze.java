@@ -22,6 +22,10 @@ public class Maze {
 	//2 dimensional list of all the pillars in the system
 	private ArrayList<ArrayList<PillarNode>> pillars;
 	
+	/**
+	 * @author Adam Gleichsner
+	 * Helper subclass to allow us to test the private methods
+	 */
 	public class Test {
 		
 		/**
@@ -266,7 +270,11 @@ public class Maze {
 	 * @param plankLayout - Map of ids to connected pillar ids
 	 */
 	public Maze(int width, int height, Map<Integer, ArrayList<Integer>> plankLayout) {
-		this.pillars = this.createMazePillars(width, height, plankLayout);
+		this.throwExceptionIfInputNull(plankLayout);
+		if (width >= 0 && height >=0) 
+			this.pillars = this.createMazePillars(width, height, plankLayout);
+		else
+			this.pillars = null;
 	}
 	
 	//Getter Method
