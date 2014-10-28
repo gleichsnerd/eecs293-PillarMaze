@@ -145,22 +145,56 @@ public class PillarNodeTest {
 		
 	}
 	
+	@Test
+	public void testAddPlanks() {
+		PillarNode node = new PillarNode(0);
+		ArrayList<Integer> testPlanks = new ArrayList<Integer>();
+				
+		//Structured basis, data flow
+		//Bad data
+		try {
+			node.addPlanks(null);
+			fail("Null as input should throw a NullPointerException");
+		} catch (NullPointerException e) {}
+		
+		//Good data
+		testPlanks.add(1);
+		testPlanks.add(2);
+		testPlanks.add(3);
+		testPlanks.add(1);
+		
+		node.addPlanks(testPlanks);
+		assertTrue("Node should contain newly added plank", node.canAccess(1));
+		assertTrue("Node should contain newly added plank", node.canAccess(2));
+		assertTrue("Node should contain newly added plank", node.canAccess(3));
+		
+		//Stress test
+		int topVal = 10000;
+		for (int n = 0; n <= topVal; n++) {
+			testPlanks.add(n);
+		}
+		node.addPlanks(testPlanks);
+		assertTrue("Plank should be accessible if within range of 0 to " + topVal, node.canAccess(topVal / 2));
+	}
+	
 	
 	//Private methods, use tester
 	
 	@Test
-	public void addPlanks() {
-		//Structured basis
-				//Data-flow
-				//Boundary
-				//Compound boundaries
-				//Bad data
-				//Good data
-				//Stress Test
-	}
-	
-	@Test
 	public void testAddPlank() {
+		PillarNode node = new PillarNode(0);
+		this.tester = node.new Test();
+		ArrayList<Integer> testPlanks = new ArrayList<Integer>();
+		
+		//Structured basis, data flow
+		//Good data, boundary
+		assertEquals("testPlanks shouldn't have any planks yet", 0, testPlanks.size());
+		assertTrue("Should be able to add a plank we don't have yet", tester.addPlank(testPlanks, 1));
+		assertTrue("testPlanks should have the newly added plank", testPlanks.contains(1));
+		assertTrue("Should be able to add a plank we don't have yet", tester.addPlank(testPlanks, 2));
+		assertTrue("testPlanks should have the newly added planks", testPlanks.contains(2));
+		assertFalse("Shouldn't be able to add a plank we already have", tester.addPlank(testPlanks, 1));
+		
 	}
 	
 	@Test

@@ -16,7 +16,7 @@ public class MazeTest {
 	Maze optimizableMaze;
 	Maze optimizedMaze;
 	Maze impossibleMaze;
-	Maze plankDepMaze;
+	Maze plankDependentMaze;
 	Maze intensiveMaze;
 	
 	Maze.Test tester;
@@ -28,23 +28,27 @@ public class MazeTest {
 		this.optimizableMaze = null;
 		this.optimizedMaze = null;
 		this.impossibleMaze = null;
-		this.plankDepMaze = null;
+		this.plankDependentMaze = null;
 		this.intensiveMaze = null;
 		this.tester = null;
 	}
 	
-	private void createAllMazes() {
-		Map<Integer, ArrayList<Integer>> emptyPlankLayout = new HashMap<Integer, ArrayList<Integer>>();
+	private void createAllMazes() {	
 		//Create 0x0 maze
-		this.nullMaze = new Maze(0, 0, emptyPlankLayout);
+		this.nullMaze = new Maze(0, 0, this.emptyPlankLayout());
 		//Create 1x1 maze
-		this.singlePillarMaze = new Maze(1, 1, emptyPlankLayout);
-		//TODO Create 4x4 Optimizable maze
+		this.singlePillarMaze = new Maze(1, 1, this.emptyPlankLayout());
+		//Create 4x4 Optimizable maze
 		this.optimizableMaze = new Maze(4, 4, this.optimizablePlankLayout());
-		//TODO Create 4x4 Optimized maze
-		//TODO Create 4x4 Impossible maze
-		//TODO Create 4x4 Plank-Dependent maze
-		//TODO Create int.MAX x int.MAX maze
+		//Create 4x4 Optimized maze
+		this.optimizedMaze = new Maze(4, 4, this.optimizedPlankLayout());
+		//Create 4x4 Impossible maze
+		this.impossibleMaze = new Maze(4, 4, this.emptyPlankLayout());
+		//Create 4x4 Plank-Dependent maze
+		this.plankDependentMaze = new Maze(4, 4, this.plankDependentPlankLayout());
+		//Create N-1 x N-1 maze
+	    int N = 1001;
+		this.intensiveMaze = new Maze(N, N, this.intensivePlankLayout(N));
 		
 	}
 	
@@ -100,7 +104,7 @@ public class MazeTest {
 
 		//Structured basis
 		
-		
+
 				//Data-flow
 				//Boundary
 				//Compound boundaries
@@ -112,25 +116,63 @@ public class MazeTest {
 	//Private class methods, use this.tester and Maze.Test class
 	
 	@Test 
-	public void testGetPillarByID() {
-		//Structured basis
-				//Data-flow
-				//Boundary
-				//Compound boundaries
-				//Bad data
-				//Good data
-				//Stress Test
+	public void testGetPillarByID() throws UninitializedObjectException {
+		this.optimizableMaze = new Maze(4, 4, this.optimizablePlankLayout());
+		ArrayList<ArrayList<PillarNode>> pillars = optimizableMaze.getPillars();
+		tester = this.optimizableMaze.new Test();
+		
+		//Structured basis, data-flow, good data
+		//Boundary
+		assertEquals("First pillar should have an ID of 0", pillars.get(0).get(0), tester.getPillarByID(pillars, 0));
+		assertEquals("Last pillar should have an ID of 15", pillars.get(3).get(3), tester.getPillarByID(pillars, 15));
+				
+		//Bad data
+		pillars = null;
+		try {
+			tester.getPillarByID(pillars, 0);
+			fail("Null set of pillars should net no pillars");
+		} catch (UninitializedObjectException e) {}
+		
+		//Stress Test
+		this.intensiveMaze = new Maze(1000, 1000, this.intensivePlankLayout(1000));
+		pillars = this.intensiveMaze.getPillars();
+		assertEquals("Large pillar set shouldn't mess up the last element being the last", pillars.get(999).get(999), tester.getPillarByID(pillars, 999999));
 	}
 	
 	@Test 
-	public void testCalculateHValue() {
-		//Structured basis
-				//Data-flow
-				//Boundary
-				//Compound boundaries
-				//Bad data
-				//Good data
-				//Stress Test
+	public void testCalculateHValue() throws UninitializedObjectException {
+		this.optimizableMaze = new Maze(4, 4, this.optimizablePlankLayout());
+		ArrayList<ArrayList<PillarNode>> testPillars = optimizableMaze.getPillars();
+		tester = this.optimizableMaze.new Test();
+		
+		/*
+		 * 0  1  2  3
+		 *          
+		 * 4  5  6  7
+		 *           
+		 * 8  9  10 11
+		 *          
+		 * 12 13 14 15
+		 */
+		
+		//Structured basis, Data-flow, good data
+		//Good data
+		assertEquals("Exit pillar should have an H of 0", 0, tester.calculateHValue(testPillars, 0, 0));
+		assertEquals("Pillar one diagonal away should have an H of 1", 1, tester.calculateHValue(testPillars, 1, 0));
+		assertEquals("Pillar two diagonal away should have an H of 2", 2, tester.calculateHValue(testPillars, 2, 0));
+		assertEquals("Pillar three diagonal away should have an H of 3", 3, tester.calculateHValue(testPillars, 3, 0));
+		assertEquals("Pillar four diagonal away should have an H of 4", 4, tester.calculateHValue(testPillars, 7, 0));
+		assertEquals("Pillar five diagonal away should have an H of 5", 5, tester.calculateHValue(testPillars, 11, 0));
+		assertEquals("Pillar six diagonal away should have an H of 6", 6, tester.calculateHValue(testPillars, 15, 0));
+		
+		//Bad data
+		try {
+			tester.calculateHValue(null, 0, 0);
+			fail("Exception should be thrown for null pillars");
+		} catch (UninitializedObjectException e) {}
+		
+		assertEquals("Negative indeces should result in the same h as their positive counterparts", 1, tester.calculateHValue(testPillars, 1, 0));
+				
 	}
 	
 	@Test 
@@ -309,6 +351,11 @@ public class MazeTest {
 		} catch (UninitializedObjectException e) {}
 	}
 	
+	private Map<Integer, ArrayList<Integer>> emptyPlankLayout() {
+		Map<Integer, ArrayList<Integer>> emptyPlankLayout = new HashMap<Integer, ArrayList<Integer>>();
+		return emptyPlankLayout;
+	}
+	
 	private Map<Integer, ArrayList<Integer>> optimizablePlankLayout() {
 		Map<Integer, ArrayList<Integer>> plankLayout = new HashMap<Integer, ArrayList<Integer>>();
 		ArrayList<Integer> planks = new ArrayList<Integer>();
@@ -364,6 +411,100 @@ public class MazeTest {
 		planks = new ArrayList<Integer>();
 		planks.add(1);
 		plankLayout.put(0, planks);
+		
+		return plankLayout;
+	}
+	
+	private Map<Integer, ArrayList<Integer>> optimizedPlankLayout() {
+		Map<Integer, ArrayList<Integer>> plankLayout = new HashMap<Integer, ArrayList<Integer>>();
+		ArrayList<Integer> planks = new ArrayList<Integer>();
+		
+		/*
+		 * 0- 1- 2- 3
+		 *          |
+		 * 4  5  6  7
+		 *          | 
+		 * 8  9  10 11
+		 *          |
+		 * 12 13 14 15
+		 */
+		
+		planks.add(11);
+		plankLayout.put(15, planks);
+		
+		planks = new ArrayList<Integer>();
+		planks.add(7); 
+		planks.add(15);
+		plankLayout.put(11, planks);
+		
+		planks = new ArrayList<Integer>();
+		planks.add(3); 
+		planks.add(11);
+		plankLayout.put(7, planks);
+		
+		planks = new ArrayList<Integer>();
+		planks.add(7); 
+		planks.add(2);
+		plankLayout.put(3, planks);
+		
+		planks = new ArrayList<Integer>();
+		planks.add(1); 
+		planks.add(3);
+		plankLayout.put(2, planks);
+		
+		planks = new ArrayList<Integer>();
+		planks.add(0); 
+		planks.add(2);
+		plankLayout.put(1, planks);
+		
+		planks = new ArrayList<Integer>();
+		planks.add(1);
+		plankLayout.put(0, planks);
+		
+		return plankLayout;
+	}
+	
+	private Map<Integer, ArrayList<Integer>> plankDependentPlankLayout() {
+		Map<Integer, ArrayList<Integer>> plankLayout = new HashMap<Integer, ArrayList<Integer>>();
+		ArrayList<Integer> planks = new ArrayList<Integer>();
+		
+		/*
+		 * 0  1- 2- 3
+		 *          |
+		 * 4  5  6  7
+		 *          | 
+		 * 8  9  10 11
+		 *          |
+		 * 12 13 14 15
+		 */
+		
+		planks.add(11);
+		plankLayout.put(15, planks);
+		
+		planks = new ArrayList<Integer>();
+		planks.add(7); 
+		planks.add(15);
+		plankLayout.put(11, planks);
+		
+		planks = new ArrayList<Integer>();
+		planks.add(3); 
+		planks.add(11);
+		plankLayout.put(7, planks);
+		
+		planks = new ArrayList<Integer>();
+		planks.add(7); 
+		planks.add(2);
+		plankLayout.put(3, planks);
+		
+		planks = new ArrayList<Integer>();
+		planks.add(1); 
+		planks.add(3);
+		plankLayout.put(2, planks);
+		
+		planks = new ArrayList<Integer>();
+		planks.add(0); 
+		planks.add(2);
+		plankLayout.put(1, planks);
 		
 		return plankLayout;
 	}
@@ -430,4 +571,38 @@ public class MazeTest {
 		return plankLayout;
 	}
 
+	private Map<Integer, ArrayList<Integer>> intensivePlankLayout(int N) {
+		Map<Integer, ArrayList<Integer>> plankLayout = new HashMap<Integer, ArrayList<Integer>>();
+		ArrayList<Integer> planks = new ArrayList<Integer>();
+		
+		/*
+		 * 0- 1- 2- ...-N
+		 *              |
+		 * ........ ... 2N
+		 *              |
+		 * ........ ... 3N
+		 * .............|.
+		 * .............NN
+		 */
+		
+		for(int y = 0; y < N; y++) {
+			for(int x = 0; x < N; x++) {
+				planks = new ArrayList<Integer>();
+
+				if(y == 0) {
+					planks.add(x - 1); 
+					planks.add(x + 1);
+				}
+				
+				if(x % (N-1) == 0) {
+					planks.add(x - N); 
+					planks.add(x + N);
+				}
+				plankLayout.put(x, planks);
+			}
+		}
+		
+		return plankLayout;
+	}
+	
 }

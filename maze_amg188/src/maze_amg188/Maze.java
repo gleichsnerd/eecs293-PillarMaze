@@ -32,8 +32,9 @@ public class Maze {
 		 * Returns the pillar with the corresponding id based on its position in the array
 		 * @param id - id of desired pillar
 		 * @return PillarNode - desired PillarNode
+		 * @throws UninitializedObjectException 
 		 */
-		public PillarNode getPillarByID(ArrayList<ArrayList<PillarNode>> testPillars, int id) {
+		public PillarNode getPillarByID(ArrayList<ArrayList<PillarNode>> testPillars, int id) throws UninitializedObjectException {
 			PillarNode returnPillar;
 			
 			//Save old maze arrangement
@@ -56,8 +57,9 @@ public class Maze {
 		 * @param currentPillarID
 		 * @param endPillarID
 		 * @return int - H Value
+		 * @throws UninitializedObjectException 
 		 */
-		public int calculateHValue(ArrayList<ArrayList<PillarNode>> testPillars, int currentPillarID, int endPillarID) {
+		public int calculateHValue(ArrayList<ArrayList<PillarNode>> testPillars, int currentPillarID, int endPillarID) throws UninitializedObjectException {
 			int returnHValue;
 			
 			//Save old maze arrangement
@@ -153,8 +155,9 @@ public class Maze {
 		 * Returns all neighboring pillars around currentPillar
 		 * @param pillar
 		 * @return ArrayList<PillarNode> - List of all neighbors
+		 * @throws UninitializedObjectException 
 		 */
-		public ArrayList<PillarNode> getNeighbors(ArrayList<ArrayList<PillarNode>> testPillars, PillarNode pillar) {
+		public ArrayList<PillarNode> getNeighbors(ArrayList<ArrayList<PillarNode>> testPillars, PillarNode pillar) throws UninitializedObjectException {
 			ArrayList<PillarNode> neighbors;
 			
 			//Save old maze arrangement
@@ -358,8 +361,10 @@ public class Maze {
 	 * Returns the pillar with the corresponding id based on its position in the array
 	 * @param id - id of desired pillar
 	 * @return PillarNode - desired PillarNode
+	 * @throws UninitializedObjectException 
 	 */
-	private PillarNode getPillarByID(int id) {
+	private PillarNode getPillarByID(int id) throws UninitializedObjectException {
+		this.throwExceptionIfMazeInvalid();
 		int height = pillars.size();
 		int y = (int) Math.floor(id/height);	//Find which base multiple of 4 the id is
 		int x = id - y * height;
@@ -372,8 +377,10 @@ public class Maze {
 	 * @param currentPillarID
 	 * @param endPillarID
 	 * @return int - H Value
+	 * @throws UninitializedObjectException 
 	 */
-	private int calculateHValue(int currentPillarID, int endPillarID) {
+	private int calculateHValue(int currentPillarID, int endPillarID) throws UninitializedObjectException {
+		this.throwExceptionIfMazeInvalid();
 		int hValue = -1;
 		int height = pillars.size();
 		int curY = (int) Math.floor(currentPillarID/height);
@@ -507,8 +514,9 @@ public class Maze {
 	 * Returns all neighboring pillars around currentPillar
 	 * @param pillar
 	 * @return ArrayList<PillarNode> - List of all neighbors
+	 * @throws UninitializedObjectException 
 	 */
-	private ArrayList<PillarNode> getNeighbors(PillarNode pillar) {
+	private ArrayList<PillarNode> getNeighbors(PillarNode pillar) throws UninitializedObjectException {
 		ArrayList<PillarNode> neighbors = new ArrayList<PillarNode>();
 		
 		this.throwExceptionIfInputNull(pillar);

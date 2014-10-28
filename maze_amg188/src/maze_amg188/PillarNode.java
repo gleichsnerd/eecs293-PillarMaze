@@ -25,6 +25,7 @@ public class PillarNode implements Comparable<PillarNode> {
 		/**
 		 * Private helper that adds a plank 
 		 * @param pillarID
+		 * @param testPlanks - replacement set of planks for testing
 		 * @return
 		 * @throws NullPointerException - if input is null
 		 */
@@ -241,7 +242,6 @@ public class PillarNode implements Comparable<PillarNode> {
 	 * @throws NullPointerException - if input is null
 	 */
 	private boolean addPlank(int pillarID) {
-		this.throwExceptionIfInputNull(pillarID);
 		//If we already have a plank, then don't add another
 		if(this.planks.contains(pillarID))
 			return false;
