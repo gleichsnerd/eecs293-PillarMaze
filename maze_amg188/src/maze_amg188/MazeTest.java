@@ -35,6 +35,9 @@ public class MazeTest {
 		this.tester = null;
 	}
 	
+	/**
+	 * Creates a maze of every type
+	 */
 	private void createAllMazes() {	
 		//Create 0x0 maze
 		this.nullMaze = new Maze(0, 0, this.emptyPlankLayout());
@@ -53,11 +56,6 @@ public class MazeTest {
 		this.intensiveMaze = new Maze(N, N, this.intensivePlankLayout(N));
 		
 	}
-	
-	private void createTester(Maze maze) {
-		this.tester = maze.new Test();
-	}
-	
 	
 	@Test 
 	public void testConstructor() {
@@ -102,17 +100,68 @@ public class MazeTest {
 	
 	@Test 
 	public void testFindShortestPath() throws UninitializedObjectException{
+		ArrayList<PillarNode> results = new ArrayList<PillarNode>();
+		int[] correctIDs;
+		int topVal;
 		this.createAllMazes();
 
 		//Structured basis
-		
+		//Case 1: Null or 0-Maze (Bad data, boundary)
+		try {
+			this.nullMaze.findShortestPath(0, 0);
+			fail("Exception should be thrown on invalid maze");
+		} catch (UninitializedObjectException e) {}
 
-				//Data-flow
-				//Boundary
-				//Compound boundaries
-				//Bad data
-				//Good data
-				//Stress Test
+		//Case 2: 1 Pillar Maze (Good data, boundary)
+		results = this.singlePillarMaze.findShortestPath(0, 0);
+		correctIDs = new int[]{0};
+		for (int i = 0; i < correctIDs.length; i++) {
+			if (results.get(i).getID() != correctIDs[i])
+				fail("Actual and expected IDs do not match");
+		}
+		
+		//Case 3: Optimized maze
+		results = this.optimizedMaze.findShortestPath(15, 0);
+		correctIDs = new int[]{0, 1, 2, 3, 7, 11, 15};
+		for (int i = 0; i < correctIDs.length; i++) {
+			if (results.get(i).getID() != correctIDs[i])
+				fail("Actual and expected IDs do not match");
+		}
+		
+		//Case 4: Optimizable maze
+		results = this.optimizableMaze.findShortestPath(15, 0);
+		correctIDs = new int[]{0, 1, 2, 6, 7, 11, 15};
+		for (int i = 0; i < correctIDs.length; i++) {
+			if (results.get(i).getID() != correctIDs[i])
+				fail("Actual and expected IDs do not match");
+		}
+		
+		//Case 5: Plank Dependent maze
+		results = this.plankDependentMaze.findShortestPath(15, 0);
+		correctIDs = new int[]{0, 1, 2, 3, 7, 11, 15};
+		for (int i = 0; i < correctIDs.length; i++) {
+			if (results.get(i).getID() != correctIDs[i])
+				fail("Actual and expected IDs do not match");
+		}
+		
+		//Case 6: Intensive maze (stress test)
+		results = this.intensiveMaze.findShortestPath(1000000, 0);
+		topVal = 1001;
+		try {
+			for(int i = 0; i < results.size(); i++) {
+				if (i < topVal)
+					assertEquals("Path should extend across entire first row", i, results.get(i));
+				else
+					assertEquals("Path should run down left side of maze", (i - topVal + 1) * 1000, results.get(i));
+			}
+		} catch (NullPointerException e) {
+			fail("Test can't find path of large maze");
+		}
+		
+		
+		//Case 7: Impossible maze
+		results = this.optimizedMaze.findShortestPath(15, 0);
+		assertNull("Shortest path should be unattainable", results);
 	}
 	
 	//Private class methods, use this.tester and Maze.Test class
@@ -457,63 +506,246 @@ public class MazeTest {
 	}
 	
 	@Test 
-	public void testGetNeighbors() {
-		//Structured basis
-				//Data-flow
-				//Boundary
-				//Compound boundaries
-				//Bad data
-				//Good data
-				//Stress Test
+	public void testGetNeighbors() throws UninitializedObjectException {
+		ArrayList<ArrayList<PillarNode>> testPillars;
+		PillarNode node;
+		ArrayList<PillarNode> results;
+		int[] correctIDs;
+		this.optimizableMaze = new Maze(4, 4, this.optimizablePlankLayout());
+		testPillars = optimizableMaze.getPillars();
+		tester = this.optimizableMaze.new Test();
+		
+		//Structured basis, dataflow, good data
+		//Case 1: Top of pillars
+		//Case 1a: Left of maze
+		node = testPillars.get(0).get(0);
+		results = tester.getNeighbors(testPillars, node);
+		correctIDs = new int[]{4, 1};
+		for (int i = 0; i < correctIDs.length; i++) {
+			if (results.get(i).getID() != correctIDs[i])
+				fail("Actual and expected IDs do not match");
+		}
+		//Case 1b: Middle of maze
+		node = testPillars.get(0).get(2);
+		results = tester.getNeighbors(testPillars, node);
+		correctIDs = new int[]{6, 1, 3};
+		for (int i = 0; i < correctIDs.length; i++) {
+			if (results.get(i).getID() != correctIDs[i])
+				fail("Actual and expected IDs do not match");
+		}
+		//Case 1c: Right of maze
+		node = testPillars.get(0).get(3);
+		results = tester.getNeighbors(testPillars, node);
+		correctIDs = new int[]{7, 2};
+		for (int i = 0; i < correctIDs.length; i++) {
+			if (results.get(i).getID() != correctIDs[i])
+				fail("Actual and expected IDs do not match");
+		}
+		//Case 2: Middle of maze
+		//Case 2a: Left of maze
+		node = testPillars.get(2).get(0);
+		results = tester.getNeighbors(testPillars, node);
+		correctIDs = new int[]{4, 12, 9};
+		for (int i = 0; i < correctIDs.length; i++) {
+			if (results.get(i).getID() != correctIDs[i])
+				fail("Actual and expected IDs do not match");
+		}
+		//Case 2b: Middle of maze
+		node = testPillars.get(2).get(2);
+		results = tester.getNeighbors(testPillars, node);
+		correctIDs = new int[]{6, 14, 9, 11};
+		for (int i = 0; i < correctIDs.length; i++) {
+			if (results.get(i).getID() != correctIDs[i])
+				fail("Actual and expected IDs do not match");
+		}
+		//Case 2c: Right of maze
+		node = testPillars.get(2).get(3);
+		results = tester.getNeighbors(testPillars, node);
+		correctIDs = new int[]{7, 15, 10};
+		for (int i = 0; i < correctIDs.length; i++) {
+			if (results.get(i).getID() != correctIDs[i])
+				fail("Actual and expected IDs do not match");
+		}
+		//Case 3: Bottom of maze
+		//Case 3a: Left of maze
+		node = testPillars.get(3).get(0);
+		results = tester.getNeighbors(testPillars, node);
+		correctIDs = new int[]{8, 13};
+		for (int i = 0; i < correctIDs.length; i++) {
+			if (results.get(i).getID() != correctIDs[i])
+				fail("Actual and expected IDs do not match");
+		}
+		//Case 3b: Middle of maze
+		node = testPillars.get(3).get(2);
+		results = tester.getNeighbors(testPillars, node);
+		correctIDs = new int[]{10, 13, 15};
+		for (int i = 0; i < correctIDs.length; i++) {
+			if (results.get(i).getID() != correctIDs[i])
+				fail("Actual and expected IDs do not match");
+		}
+		//Case 3c: Right of maze
+		node = testPillars.get(3).get(3);
+		results = tester.getNeighbors(testPillars, node);
+		correctIDs = new int[]{11, 14};
+		for (int i = 0; i < correctIDs.length; i++) {
+			if (results.get(i).getID() != correctIDs[i])
+				fail("Actual and expected IDs do not match");
+		}
+		
+		//Bad data
+		try {
+			this.tester.getNeighbors(testPillars, null);
+			fail("Exception should be thrown on null node");
+		} catch (NullPointerException e) {}
 	}
 	
 	@Test 
 	public void testCalculateGValue() {
-		//Structured basis
-				//Data-flow
-				//Boundary
-				//Compound boundaries
-				//Bad data
-				//Good data
-				//Stress Test
+		PillarNode current, neighbor;
+		ArrayList<Integer> accessiblePillars = new ArrayList<Integer>();
+		
+		this.optimizableMaze = new Maze(4, 4, this.optimizablePlankLayout());
+		tester = this.optimizableMaze.new Test();
+		
+		current = new PillarNode(0);
+		neighbor = new PillarNode(1);
+		
+		//Structured basis, dataflow
+		//Case 1: GValue >= 0 (Boundary)
+		current.setGValue(0);
+		//Case 1a: current can access next
+		accessiblePillars.add(1);
+		current.addPlanks(accessiblePillars);
+		assertEquals("GValue should be 0 + 1", 1, tester.calculateGValue(current, neighbor));
+		//Case 1b: current PValue == 0
+		current = new PillarNode(0);
+		current.setGValue(0);
+		current.setPValue(0);
+		assertEquals("GValue should be -1 since route is killed", -1, tester.calculateGValue(current, neighbor));
+		//Case 2: GValue < 0
+		current.setGValue(-1);
+		assertEquals("GValue should be -1 since node is unaccessible", -1, tester.calculateGValue(current, neighbor));
+		
+		//Bad data
+		try {
+			this.tester.calculateGValue(current, null);
+			fail("Exception should be thrown on null node");
+		} catch (NullPointerException e) {}
+		try {
+			this.tester.calculateGValue(null, neighbor);
+			fail("Exception should be thrown on null node");
+		} catch (NullPointerException e) {}
 	}
 	
 	@Test 
 	public void testCalculatePValue() {
-		//Structured basis
-				//Data-flow
-				//Boundary
-				//Compound boundaries
-				//Bad data
-				//Good data
-				//Stress Test
+		PillarNode current, neighbor;
+		ArrayList<Integer> accessiblePillars = new ArrayList<Integer>();
+		
+		this.optimizableMaze = new Maze(4, 4, this.optimizablePlankLayout());
+		tester = this.optimizableMaze.new Test();
+		
+		current = new PillarNode(0);
+		neighbor = new PillarNode(1);
+		
+		//Structured basis, dataflow
+		//Case 1: PValue >= 0 (Boundary)
+		current.setPValue(1);
+		//Case 1a: current can access next
+		accessiblePillars.add(1);
+		current.addPlanks(accessiblePillars);
+		//Case 1ai: pValue > 0
+		assertEquals("PValue should be 1 + 1", 2, tester.calculatePValue(current, neighbor));
+		//Case 1aii: pValue <= 0
+		current.setPValue(0);
+		assertEquals("PValue should be 0", 0, tester.calculatePValue(current, neighbor));
+		//Case 1b: current PValue == 0
+		current = new PillarNode(0);
+		current.setGValue(0);
+		current.setPValue(0);
+		assertEquals("PValue should be 1 since we have to use plank", 1, tester.calculatePValue(current, neighbor));
+		//Case 2: PValue < 0
+		current.setPValue(-1);
+		//For some reason it returns 1
+		assertEquals("PValue should be -1 since node is unaccessible", -1, tester.calculatePValue(current, neighbor));
+		
+		//Bad data
+		try {
+			this.tester.calculatePValue(current, null);
+			fail("Exception should be thrown on null node");
+		} catch (NullPointerException e) {}
+		try {
+			this.tester.calculatePValue(null, neighbor);
+			fail("Exception should be thrown on null node");
+		} catch (NullPointerException e) {}
 	}
 	
 	@Test 
 	public void testCreateMazePillars() {
-		//Structured basis
-				//Data-flow
-				//Boundary
-				//Compound boundaries
-				//Bad data
-				//Good data
-				//Stress Test
+		ArrayList<ArrayList<PillarNode>> results;
+		this.optimizableMaze = new Maze(4, 4, this.optimizablePlankLayout());
+		tester = this.optimizableMaze.new Test();
+		
+		//Structured basis, good data
+		results = tester.createMazePillars(4, 4, this.optimizedPlankLayout());
+		assertEquals("Pillars should equal input size", 4, results.size());
+		assertEquals("Pillars should equal input size", 4, results.get(0).size());
+		assertEquals("First pillar should index 0", 0, results.get(0).get(0).getID());
+		assertEquals("Last pillar should index ", 15, results.get(3).get(3).getID());
+				
+		//Boundary
+		results = tester.createMazePillars(1, 1, this.emptyPlankLayout());
+		assertEquals("Pillars should equal input size", 1, results.size());
+		assertEquals("Pillars should equal input size", 1, results.get(0).size());
+		assertEquals("First pillar should index 0", 0, results.get(0).get(0).getID());
+		assertEquals("Last pillar should index 0", 0, results.get(0).get(0).getID());
+		
+		//Bad data
+		try {
+			results = tester.createMazePillars(4, 4, null);
+			fail("Exception should be thrown on null input");
+		} catch(NullPointerException e) {}
+		
+		results = tester.createMazePillars(-1, -1, this.optimizablePlankLayout());
+		assertEquals("Pillars with negative size input should be empty", 0, results.size());
+		
 	}
 	
 	@Test 
 	public void testGetPillarsAccessibleByPlanks() {
-		//Structured basis
-				//Data-flow
-				//Boundary
-				//Compound boundaries
-				//Bad data
-				//Good data
-				//Stress Test
-	}
-	
-	@Test 
-	public void testPillarsAreAdjoining() {
-		//Structured basis
+		ArrayList<Integer> results;
+		int[] correctIDs;
+		this.optimizableMaze = new Maze(4, 4, this.optimizablePlankLayout());
+		tester = this.optimizableMaze.new Test();
+		
+		//Structured basis, dataflow, good data
+		results = tester.getPillarsAccessibleByPlanks(0, 0, 4, 4, this.optimizedPlankLayout());
+		correctIDs = new int[]{1};
+		for (int i = 0; i < correctIDs.length; i++) {
+			if (results.get(i) != correctIDs[i])
+				fail("Actual and expected IDs do not match");
+		}
+
+		results = tester.getPillarsAccessibleByPlanks(3, 3, 4, 4, this.optimizedPlankLayout());
+		correctIDs = new int[]{11};
+		for (int i = 0; i < correctIDs.length; i++) {
+			if (results.get(i) != correctIDs[i])
+				fail("Actual and expected IDs do not match");
+		}
+		
+		results = tester.getPillarsAccessibleByPlanks(3, 0, 4, 4, this.optimizedPlankLayout());
+		correctIDs = new int[]{7, 2};
+		for (int i = 0; i < correctIDs.length; i++) {
+			if (results.get(i) != correctIDs[i])
+				fail("Actual and expected IDs do not match");
+		}
+		
+		//Bad data
+		try {
+			tester.getPillarsAccessibleByPlanks(1, 1, 1, 1, this.optimizablePlankLayout());
+			fail("Exception should be thrown on mismatched sizes");
+		} catch (IllegalArgumentException e) {}
+		
 				//Data-flow
 				//Boundary
 				//Compound boundaries
@@ -525,7 +757,7 @@ public class MazeTest {
 	@Test 
 	public void testThrowExceptionIfInputNull() {
 		this.createAllMazes();
-		this.createTester(this.optimizableMaze);
+		tester = this.optimizableMaze.new Test();
 		//Structured basis, data-flow
 		//Good data, true case
 		try {
@@ -544,7 +776,7 @@ public class MazeTest {
 	@Test 
 	public void testThrowExceptionIfMazeInvalid() {
 		this.createAllMazes();
-		this.createTester(this.optimizableMaze);
+		tester = this.optimizableMaze.new Test();
 		
 		//Structured basis, data-flow
 		//Good data, true case
@@ -566,11 +798,19 @@ public class MazeTest {
 		} catch (UninitializedObjectException e) {}
 	}
 	
+	/**
+	 * Pregenerated empty plank layout
+	 * @return
+	 */
 	private Map<Integer, ArrayList<Integer>> emptyPlankLayout() {
 		Map<Integer, ArrayList<Integer>> emptyPlankLayout = new HashMap<Integer, ArrayList<Integer>>();
 		return emptyPlankLayout;
 	}
 	
+	/**
+	 * Pregenerated optimizable plank layout
+	 * @return
+	 */
 	private Map<Integer, ArrayList<Integer>> optimizablePlankLayout() {
 		Map<Integer, ArrayList<Integer>> plankLayout = new HashMap<Integer, ArrayList<Integer>>();
 		ArrayList<Integer> planks = new ArrayList<Integer>();
@@ -630,6 +870,10 @@ public class MazeTest {
 		return plankLayout;
 	}
 	
+	/**
+	 * Pregenterated optimized plank layout
+	 * @return
+	 */
 	private Map<Integer, ArrayList<Integer>> optimizedPlankLayout() {
 		Map<Integer, ArrayList<Integer>> plankLayout = new HashMap<Integer, ArrayList<Integer>>();
 		ArrayList<Integer> planks = new ArrayList<Integer>();
@@ -679,6 +923,10 @@ public class MazeTest {
 		return plankLayout;
 	}
 	
+	/**
+	 * Pregenerated plank dependent layout
+	 * @return
+	 */
 	private Map<Integer, ArrayList<Integer>> plankDependentPlankLayout() {
 		Map<Integer, ArrayList<Integer>> plankLayout = new HashMap<Integer, ArrayList<Integer>>();
 		ArrayList<Integer> planks = new ArrayList<Integer>();
@@ -724,68 +972,11 @@ public class MazeTest {
 		return plankLayout;
 	}
 	
-	private Map<Integer, ArrayList<Integer>> badPlankLayout() {
-		Map<Integer, ArrayList<Integer>> plankLayout = new HashMap<Integer, ArrayList<Integer>>();
-		ArrayList<Integer> planks = new ArrayList<Integer>();
-		
-		/*
-		 * 0- 1- 2  3
-		 *       |
-		 * 4  5  6 -7
-		 *       |  | 
-		 * 8  9  |10-11
-		 *       ||
-		 * 12 13 14-15
-		 * **Plank between 14 and 6 is invalid**
-		 */
-		
-		planks.add(14);
-		plankLayout.put(15, planks);
-		
-		planks = new ArrayList<Integer>();
-		planks.add(15); 
-		planks.add(10);
-		planks.add(6);
-		plankLayout.put(14, planks);
-		
-		planks = new ArrayList<Integer>();
-		planks.add(14); 
-		planks.add(11);
-		plankLayout.put(10, planks);
-		
-		planks = new ArrayList<Integer>();
-		planks.add(7); 
-		planks.add(10);
-		plankLayout.put(11, planks);
-		
-		planks = new ArrayList<Integer>();
-		planks.add(11); 
-		planks.add(6);
-		plankLayout.put(7, planks);
-		
-		planks = new ArrayList<Integer>();
-		planks.add(7); 
-		planks.add(2);
-		planks.add(14);
-		plankLayout.put(6, planks);
-		
-		planks = new ArrayList<Integer>();
-		planks.add(1); 
-		planks.add(6);
-		plankLayout.put(2, planks);
-		
-		planks = new ArrayList<Integer>();
-		planks.add(2); 
-		planks.add(0);
-		plankLayout.put(1, planks);
-		
-		planks = new ArrayList<Integer>();
-		planks.add(1);
-		plankLayout.put(0, planks);
-		
-		return plankLayout;
-	}
-
+	/**
+	 * Pregenerated intensive plank layout, takes variable size
+	 * @param N
+	 * @return
+	 */
 	private Map<Integer, ArrayList<Integer>> intensivePlankLayout(int N) {
 		Map<Integer, ArrayList<Integer>> plankLayout = new HashMap<Integer, ArrayList<Integer>>();
 		ArrayList<Integer> planks = new ArrayList<Integer>();
