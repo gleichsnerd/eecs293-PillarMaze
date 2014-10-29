@@ -12,12 +12,19 @@ public class PillarNodeTest {
 	PillarNode node;
 	PillarNode.Test tester;
 
+	/**
+	 * Resets the class variables before each test
+	 */
 	@Before
 	public void cleanNodeAndTester() {
 		this.node = null;
 		this.tester = null;
 	}
 	
+	/**
+	 * Test the constructor and if it initializes all class
+	 * variables correctly
+	 */
 	@Test
 	public void testPillarNodeConstructor() {
 		node = new PillarNode(0);
@@ -38,6 +45,9 @@ public class PillarNodeTest {
 		assertEquals("ID should be set to the +1 argument", 1, node.getID());
 	}
 	
+	/**
+	 * Test all setters and getters available in the class
+	 */
 	@Test
 	public void testPillarNodeSetGet() {
 		PillarNode parent1 = new PillarNode(10);
@@ -74,6 +84,11 @@ public class PillarNodeTest {
 		assertNull("pParent should be settable to null", node.getPParent());
 	}
 	
+	/**
+	 * Test whether a node is contained in teh current node's
+	 * planks arraylist.
+	 * Contains a stress test, expect delays.
+	 */
 	@Test
 	public void testCanAccess() {
 		ArrayList<Integer> planks = new ArrayList<Integer>();
@@ -105,6 +120,12 @@ public class PillarNodeTest {
 		assertTrue("Should be able to access any element between 0 and topVal", node.canAccess((int)(Math.floor(Math.random()*topVal))));			
 	}
 	
+	/**
+	 * Tests comparisons between two nodes. The node with the 
+	 * lower p or g + h value is considered less than the other,
+	 * while a tie between g+h and p+h between two nodes will
+	 * go to the g+h cost node.
+	 */
 	@Test
 	public void testCompareTo() {
 		PillarNode node1 = new PillarNode(1);
@@ -128,7 +149,7 @@ public class PillarNodeTest {
 		
 		node2.setHValue(1);
 		node2.setGValue(2);
-		node2.setPValue(1);
+		node2.setPValue(2);
 		
 		assertEquals("node1 is preferrable over node2, result should reflect that", -1, node1.compareTo(node2));
 		
@@ -145,6 +166,10 @@ public class PillarNodeTest {
 		
 	}
 	
+	/**
+	 * Test functionality of adding multiple planks to the
+	 * PillarNode.
+	 */
 	@Test
 	public void testAddPlanks() {
 		PillarNode node = new PillarNode(0);
@@ -180,6 +205,9 @@ public class PillarNodeTest {
 	
 	//Private methods, use tester
 	
+	/**
+	 * Test functionality of adding a single plank at a time
+	 */
 	@Test
 	public void testAddPlank() {
 		PillarNode node = new PillarNode(0);
@@ -197,37 +225,181 @@ public class PillarNodeTest {
 		
 	}
 	
+	/**
+	 * Test functionality of null input checking
+	 */
 	@Test
 	public void testThrowExceptionIfInputNull() {
-		//Structured basis
-				//Data-flow
-				//Boundary
-				//Compound boundaries
-				//Bad data
-				//Good data
-				//Stress Test
+		PillarNode node = new PillarNode(0);
+		this.tester = node.new Test();
+		//Structured basis, data-flow
+		//Good data, true case
+		try {
+			this.tester.throwExceptionIfInputNull("a", "b", "c");
+		} catch (NullPointerException e) {
+			fail("Non-null objects shouldn't trigger an exception");
+		}
 		
+		//Bad data, false case
+		try {
+			this.tester.throwExceptionIfInputNull("a", "b", null);
+			fail("A null element should result in an exception");
+		} catch (NullPointerException e) {}
 	}
 	
+	/**
+	 * Test whether the current node is cheaper than another
+	 * node. Whichever has the lower g+h or p+h wins, ties not
+	 * considered.
+	 */
 	@Test
 	public void testIsCheaperThan() {
-		//Structured basis
-				//Data-flow
-				//Boundary
-				//Compound boundaries
-				//Bad data
-				//Good data
-				//Stress Test
+		PillarNode thisNode = new PillarNode(0);
+		PillarNode thatNode = new PillarNode(0);
+		this.tester = thisNode.new Test();
+		thisNode.setHValue(0);
+		thatNode.setHValue(0);
+
+		//Structured basis, dataflow
+		//-Case 1: this g+h < that g+h and that p+h
+		//Good data
+		thisNode.setGValue(1);
+		thisNode.setPValue(1);
+		thatNode.setGValue(2);
+		thatNode.setPValue(2);
+		assertTrue("thisNode should be considered cheaper", tester.isCheaperThan(thatNode));
+		
+		//Bad data
+		thisNode.setGValue(-1);
+		thisNode.setPValue(-1);
+		thatNode.setGValue(-2);
+		thatNode.setPValue(-2);
+		assertTrue("thisNode should still be considered cheaper according to the math", tester.isCheaperThan(thatNode));
+		
+		//-Case 2: this p+h < that g+h and that p+h
+		//Good data
+		thisNode.setGValue(5);
+		thisNode.setPValue(1);
+		thatNode.setGValue(2);
+		thatNode.setPValue(2);
+		assertTrue("thisNode should be considered cheaper", tester.isCheaperThan(thatNode));
+		
+		//Bad data
+		thisNode.setGValue(-5);
+		thisNode.setPValue(-1);
+		thatNode.setGValue(-2);
+		thatNode.setPValue(-2);
+		assertTrue("thisNode should still be considered cheaper according to the math", tester.isCheaperThan(thatNode));
+		
+		//-Case 3: both are > that g+h and that p+h
+		//Good data
+		thisNode.setGValue(5);
+		thisNode.setPValue(5);
+		thatNode.setGValue(2);
+		thatNode.setPValue(2);
+		assertFalse("thisNode should not be considered cheaper", tester.isCheaperThan(thatNode));
+
+		//Bad data
+		thisNode.setGValue(-5);
+		thisNode.setPValue(-5);
+		thatNode.setGValue(-2);
+		thatNode.setPValue(-2);
+		assertFalse("thisNode should still be considered more expensive according to the math", tester.isCheaperThan(thatNode));
+				
 	}
 	
+	/**
+	 * Tests for preferrability in a tie. Will return false
+	 * if there is no tie, so use in tie cases only
+	 */
 	@Test
 	public void testIsPreferredTo() {
-		//Structured basis
-				//Data-flow
-				//Boundary
-				//Compound boundaries
-				//Bad data
-				//Good data
-				//Stress Test
+		PillarNode thisNode = new PillarNode(0);
+		PillarNode thatNode = new PillarNode(0);
+		this.tester = thisNode.new Test();
+		thisNode.setHValue(0);
+		thatNode.setHValue(0);
+		
+		//Structured basis, dataflow
+		//Conditionals
+		// 1 -this g+h == that g+h
+		// 2 -this g+h == that p+h
+		// 3 -this p+h >= that g+h
+		// 4 -this p+h >= that p+h
+		
+		//Case 1: TTTT
+		//Good data
+		thisNode.setGValue(1);
+		thisNode.setPValue(2);
+		thatNode.setGValue(1);
+		thatNode.setPValue(1);
+		assertTrue("thisNode should be preferred", tester.isPreferredTo(thatNode));
+		
+		//Bad data
+		thisNode.setGValue(-1);
+		thisNode.setPValue(-2);
+		thatNode.setGValue(-1);
+		thatNode.setPValue(-1);
+		assertTrue("thisNode should still be preferred according to the math", tester.isPreferredTo(thatNode));
+		
+		//Case 2: TTTF
+		//Good data
+		thisNode.setGValue(1);
+		thisNode.setPValue(0);
+		thatNode.setGValue(0);
+		thatNode.setPValue(1);
+		assertFalse("thisNode should not be preferred", tester.isPreferredTo(thatNode));
+		
+		//Bad data
+		thisNode.setGValue(-1);
+		thisNode.setPValue(0);
+		thatNode.setGValue(0);
+		thatNode.setPValue(-1);
+		assertFalse("thisNode should still not be preferred according to the math", tester.isPreferredTo(thatNode));
+		
+		//Case 3: TTFT
+		//Good data
+		thisNode.setGValue(1);
+		thisNode.setPValue(0);
+		thatNode.setGValue(1);
+		thatNode.setPValue(0);
+		assertFalse("thisNode should not be preferred", tester.isPreferredTo(thatNode));
+		
+		//Bad data
+		thisNode.setGValue(-1);
+		thisNode.setPValue(0);
+		thatNode.setGValue(-1);
+		thatNode.setPValue(0);
+		assertFalse("thisNode should still not be preferred according to the math", tester.isPreferredTo(thatNode));
+		
+		//Case 4: TFTT
+		//Good data
+		thisNode.setGValue(1);
+		thisNode.setPValue(2);
+		thatNode.setGValue(1);
+		thatNode.setPValue(0);
+		assertFalse("thisNode should not be preferred", tester.isPreferredTo(thatNode));
+		
+		//Bad data
+		thisNode.setGValue(-1);
+		thisNode.setPValue(-2);
+		thatNode.setGValue(-1);
+		thatNode.setPValue(0);
+		assertFalse("thisNode should still not be preferred according to the math", tester.isPreferredTo(thatNode));
+		
+		//Case 5: FTTT
+		//Good data
+		thisNode.setGValue(1);
+		thisNode.setPValue(2);
+		thatNode.setGValue(0);
+		thatNode.setPValue(1);
+		assertFalse("thisNode should not be preferred", tester.isPreferredTo(thatNode));
+		
+		//Bad data
+		thisNode.setGValue(-1);
+		thisNode.setPValue(2);
+		thatNode.setGValue(0);
+		thatNode.setPValue(-1);
+		assertFalse("thisNode should still not be preferred according to the math", tester.isPreferredTo(thatNode));
 	}
 }

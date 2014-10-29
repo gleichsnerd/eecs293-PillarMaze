@@ -4,7 +4,9 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -177,28 +179,120 @@ public class MazeTest {
 	
 	@Test 
 	public void testGetLowestCostNode() {
-		//Structured basis
-				//Data-flow
-				//Boundary
-				//Compound boundaries
-				//Bad data
-				//Good data
-				//Stress Test
+		Set<PillarNode> pillarSet = new HashSet<PillarNode>();
+		PillarNode node1, node2, node3;
+		this.optimizableMaze = new Maze(4, 4, this.optimizablePlankLayout());
+		tester = this.optimizableMaze.new Test();
+		
+		//Structured basis, data-flow
+		//Good data
+		//Boundary - 1 node
+		node1 = new PillarNode(0);
+		node1.setHValue(0);
+		node1.setGValue(2);
+		
+		pillarSet.add(node1);
+		assertEquals("Cheapest node should be the only node", node1, tester.getLowestCostNode(pillarSet));
+		
+		//Boundary - 2 nodes
+		node2 = new PillarNode(1);
+		node2.setHValue(1);
+		node2.setGValue(2);
+		
+		pillarSet.add(node2);
+		assertEquals("Cheapest node should be node1", node1, tester.getLowestCostNode(pillarSet));
+		
+		//Boundary - 3 nodes, tie between 1 and 3
+		node3 = new PillarNode(2);
+		node3.setHValue(0);
+		node3.setPValue(2);
+		node3.setGValue(3);
+		pillarSet.add(node3);
+		assertEquals("Cheapest node should still be node1", node1, tester.getLowestCostNode(pillarSet));
+		
+		//Bad data
+		pillarSet = new HashSet<PillarNode>();
+		try {
+			tester.getLowestCostNode(pillarSet);
+			fail("Exception should be thrown for empty set");
+		} catch (IllegalArgumentException e) {}
 	}
 	
 	@Test 
-	public void testGetShortestPathFromNode() {
-		//Structured basis
-				//Data-flow
-				//Boundary
-				//Compound boundaries
-				//Bad data
-				//Good data
-				//Stress Test
+	public void testGetShortestPathFromNode() throws UninitializedObjectException {
+		ArrayList<ArrayList<PillarNode>> testPillars;
+		ArrayList<PillarNode> results;
+		this.optimizableMaze = new Maze(4, 4, this.optimizablePlankLayout());
+		testPillars = optimizableMaze.getPillars();
+		tester = this.optimizableMaze.new Test();
+		int[] correctIDs;
+		/*
+		 * 0- 1- 2  3
+		 *       |
+		 * 4  5  6 -7
+		 *          | 
+		 * 8  9  10-11
+		 *        |
+		 * 12 13 14-15
+		 */
+		
+		//Structured basis, dataflow
+		//Good data
+		//Boundary: 0 parents
+		results = tester.getShortestPathFromNode(this.tester.getPillarByID(testPillars, 0));
+		correctIDs = new int[]{0};
+		for (int i = 0; i < correctIDs.length; i++) {
+			if (results.get(i).getID() != correctIDs[i])
+				fail("Actual and expected IDs do not match");
+		}
+		
+		//Boundary: 1 parent
+		tester.getPillarByID(testPillars, 0).setPParent(tester.getPillarByID(testPillars, 1));
+		results = tester.getShortestPathFromNode(this.tester.getPillarByID(testPillars, 0));
+		correctIDs = new int[]{0, 1};
+		for (int i = 0; i < correctIDs.length; i++) {
+			if (results.get(i).getID() != correctIDs[i])
+				fail("Actual and expected IDs do not match");
+		}
+		
+		//Boundary: 2 parents, 1G and 1P
+		tester.getPillarByID(testPillars, 1).setGParent(tester.getPillarByID(testPillars, 2));
+		results = tester.getShortestPathFromNode(this.tester.getPillarByID(testPillars, 0));
+		correctIDs = new int[]{0, 1, 2};
+		for (int i = 0; i < correctIDs.length; i++) {
+			if (results.get(i).getID() != correctIDs[i])
+				fail("Actual and expected IDs do not match");
+		}
+		
+		//Bad data
+		try {
+			results = tester.getShortestPathFromNode(null);
+			fail("Exception should be thrown on null pillar");
+		} catch (NullPointerException e) {}
 	}
 	
 	@Test 
 	public void testLinkNeighborToPath() {
+		ArrayList<ArrayList<PillarNode>> testPillars;
+		PillarNode current, neighbor;
+		int tempG, tempP;
+		Set<PillarNode> openSet, closedSet;
+		this.optimizableMaze = new Maze(4, 4, this.optimizablePlankLayout());
+		testPillars = optimizableMaze.getPillars();
+		tester = this.optimizableMaze.new Test();
+		
+		//Structured basis, data flow
+		//-Case 1: Can't be traversed
+		//-Case 2: Is in closed set
+		//-Case 3: Can be traversed and isn't in closed set
+		//-Case 3a: tempPValue - currentPillar.getPValue() == 1
+		//-Case 3b: gParentShouldBeSet
+		//-Case 3c: != 1 and parent shouldn't be set
+		
+		//Good data
+		
+		
+		
 		//Structured basis
 				//Data-flow
 				//Boundary

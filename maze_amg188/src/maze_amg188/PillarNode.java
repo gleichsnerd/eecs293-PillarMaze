@@ -270,6 +270,7 @@ public class PillarNode implements Comparable<PillarNode> {
 	 * @return boolean - true if this node is cheaper, false otherwise
 	 */
 	private boolean isCheaperThan(PillarNode otherNode) {
+		this.throwExceptionIfInputNull(otherNode);
 		int hDiff = this.hValue - otherNode.getHValue();	//Calculate ahead for simplicity
 		//If this g + h value is less than the other's g + h and p + h or
 		//this p + h is less than the other's g + h and p + h
@@ -291,7 +292,7 @@ public class PillarNode implements Comparable<PillarNode> {
 		int hDiff = this.hValue - otherNode.getHValue();
 		//If g + h equals other's p + h and this p + h isn't outright less than
 		//the other's, give priority to this node
-		if (this.gValue + hDiff == otherNode.getPValue() &&
+		if (this.gValue + hDiff == otherNode.getGValue() &&
 				this.gValue + hDiff == otherNode.getPValue() &&
 				this.pValue + hDiff >= otherNode.getGValue() &&
 				this.pValue + hDiff >= otherNode.getPValue())

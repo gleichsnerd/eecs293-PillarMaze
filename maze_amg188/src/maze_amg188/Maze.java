@@ -403,6 +403,8 @@ public class Maze {
 	private PillarNode getLowestCostNode(Set<PillarNode> openSet) {
 		PillarNode[] pillarArray;
 		this.throwExceptionIfInputNull(openSet);
+		if (openSet.size() == 0)
+			throw new IllegalArgumentException();
 		//Create an array from the set so we can sort it and return the cheapest node
 		pillarArray = openSet.toArray(new PillarNode[openSet.size()]);
 		Arrays.sort(pillarArray);
