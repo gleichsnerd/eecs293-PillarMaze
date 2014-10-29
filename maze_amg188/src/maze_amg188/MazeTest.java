@@ -276,63 +276,184 @@ public class MazeTest {
 		ArrayList<ArrayList<PillarNode>> testPillars;
 		PillarNode current, neighbor;
 		int tempG, tempP;
-		Set<PillarNode> openSet, closedSet;
+		Set<PillarNode> closedSet = new HashSet<PillarNode>();
 		this.optimizableMaze = new Maze(4, 4, this.optimizablePlankLayout());
 		testPillars = optimizableMaze.getPillars();
 		tester = this.optimizableMaze.new Test();
 		
 		//Structured basis, data flow
 		//-Case 1: Can't be traversed
+		current = new PillarNode(0);
+		neighbor = new PillarNode(0);
+		tempG = -1;
+		tempP = -1;
+		tester.linkNeighborToPath(current, neighbor, closedSet, tempG, tempP);
+		assertNull("Neighbor should have no parents", neighbor.getGParent());
+		assertNull("Neighbor should have no parents", neighbor.getPParent());
+		
 		//-Case 2: Is in closed set
+		closedSet.add(neighbor);
+		tester.linkNeighborToPath(current, neighbor, closedSet, tempG, tempP);
+		assertNull("Neighbor should have no parents", neighbor.getGParent());
+		assertNull("Neighbor should have no parents", neighbor.getPParent());
+		
 		//-Case 3: Can be traversed and isn't in closed set
+		closedSet = new HashSet<PillarNode>();
+		current.setPValue(0);
+		current.setGValue(0);
 		//-Case 3a: tempPValue - currentPillar.getPValue() == 1
+		tempP = 1;
+		tester.linkNeighborToPath(current, neighbor, closedSet, tempG, tempP);
+		assertNull("Neighbor should have no g parent", neighbor.getGParent());
+		assertEquals("Neighbor should have a p parent", current, neighbor.getPParent());
+		assertEquals("Neighbor should have a pvalue of 1", 1, neighbor.getPValue());
+		assertEquals("Neighbor should have a gvalue of -1", -1, neighbor.getGValue());
+		
 		//-Case 3b: gParentShouldBeSet
+		tempP = -1;
+		tempG = 1;
+		neighbor = new PillarNode(1);
+		tester.linkNeighborToPath(current, neighbor, closedSet, tempG, tempP);
+		assertNull("Neighbor should have no p parent", neighbor.getPParent());
+		assertEquals("Neighbor should have a g parent", current, neighbor.getGParent());
+		assertEquals("Neighbor should have a gvalue of 1", 1, neighbor.getGValue());
+		assertEquals("Neighbor should have a pvalue of -1", -1, neighbor.getPValue());
+		
 		//-Case 3c: != 1 and parent shouldn't be set
+		tempP = 0;
+		tempG = 2;
+		tester.linkNeighborToPath(current, neighbor, closedSet, tempG, tempP);
+		//All values should be the same
+		assertNull("Neighbor should have no p parent", neighbor.getPParent());
+		assertEquals("Neighbor should have a g parent", current, neighbor.getGParent());
+		assertEquals("Neighbor should have a gvalue of 1", 1, neighbor.getGValue());
+		assertEquals("Neighbor should have a pvalue of -1", -1, neighbor.getPValue());
+			
+		//Bad data
+		//current = null
+		try {
+			tester.linkNeighborToPath(null, neighbor, closedSet, tempG, tempP);
+			fail("Exception should have been thrown for null field");
+		} catch (NullPointerException e) {}
+		//neighbor = null
+		try {
+			tester.linkNeighborToPath(current, null, closedSet, tempG, tempP);
+			fail("Exception should have been thrown for null field");
+		} catch (NullPointerException e) {}
+		//closedSet = null
+		try {
+			tester.linkNeighborToPath(current, neighbor, null, tempG, tempP);
+			fail("Exception should have been thrown for null field");
+		} catch (NullPointerException e) {}
 		
-		//Good data
-		
-		
-		
-		//Structured basis
-				//Data-flow
-				//Boundary
-				//Compound boundaries
-				//Bad data
-				//Good data
-				//Stress Test
 	}
  
 	@Test 
 	public void testShouldBeAddedToOpenSet() {
-		//Structured basis
-				//Data-flow
-				//Boundary
-				//Compound boundaries
-				//Bad data
-				//Good data
-				//Stress Test
+		ArrayList<ArrayList<PillarNode>> testPillars;
+		PillarNode neighbor;
+		int tempG, tempP;
+		Set<PillarNode> closedSet = new HashSet<PillarNode>();
+		Set<PillarNode> openSet = new HashSet<PillarNode>();
+		this.optimizableMaze = new Maze(4, 4, this.optimizablePlankLayout());
+		testPillars = optimizableMaze.getPillars();
+		tester = this.optimizableMaze.new Test();
+		
+		//Structured basis, dataflow, good data
+		//Conditionals
+		//-can be traversed
+		//-Not in openSet
+		//-Not in closeSet
+		
+		//Case 1: TTT
+		tempG = 1;
+		tempP = 1;
+		neighbor = new PillarNode(1);
+		assertTrue("Method should indicate neighbor should be added to openset", this.tester.shouldBeAddedToOpenSet(neighbor, openSet, closedSet, tempG, tempP));
+
+		//Case 2: TTF
+		closedSet.add(neighbor);
+		assertFalse("Method should indicate neighbor should not be added to openset", this.tester.shouldBeAddedToOpenSet(neighbor, openSet, closedSet, tempG, tempP));
+		
+		//Case 3: TFT
+		closedSet = new HashSet<PillarNode>();
+		openSet.add(neighbor);
+		assertFalse("Method should indicate neighbor should not be added to openset", this.tester.shouldBeAddedToOpenSet(neighbor, openSet, closedSet, tempG, tempP));
+		
+		//Case 4: FTT
+		openSet = new HashSet<PillarNode>();
+		tempG = -1;
+		tempP = -1;
+		assertFalse("Method should indicate neighbor should not be added to openset", this.tester.shouldBeAddedToOpenSet(neighbor, openSet, closedSet, tempG, tempP));
+		
+		
+		//Bad data
+		//neighbor = null
+		try {
+			tester.shouldBeAddedToOpenSet(null, openSet, closedSet, tempG, tempP);
+			fail("Exception should have been thrown for null field");
+		} catch (NullPointerException e) {}
+		//openSet = null
+		try {
+			tester.shouldBeAddedToOpenSet(neighbor, null, closedSet, tempG, tempP);
+			fail("Exception should have been thrown for null field");
+		} catch (NullPointerException e) {}
+		//closedSet = null
+		try {
+			tester.shouldBeAddedToOpenSet(neighbor, openSet, null, tempG, tempP);
+			fail("Exception should have been thrown for null field");
+		} catch (NullPointerException e) {}
+		
 	}
 	
 	@Test 
 	public void testNeighborCanBeTraversed() {
-		//Structured basis
-				//Data-flow
-				//Boundary
-				//Compound boundaries
-				//Bad data
-				//Good data
-				//Stress Test
+		int gValue, pValue;
+		this.optimizableMaze = new Maze(4, 4, this.optimizablePlankLayout());
+		tester = this.optimizableMaze.new Test();
+		
+		//Structured basis, data flow, good data
+		//Case 1: gValue >= 0
+		//Boundary
+		gValue = 0;
+		pValue = -1;
+		assertTrue("Neighbor should be traversable", this.tester.neighborCanBeTraversed(gValue, pValue));
+				
+		//Case 2: pValue >= 0
+		//Boundary
+		gValue = -1;
+		pValue = 0;
+		assertTrue("Neighbor should be traversable", this.tester.neighborCanBeTraversed(gValue, pValue));
+		
+		//Case 3: gValue < 0 && pValue < 0
+		//Boundary
+		gValue = -1;
+		pValue = -1;
+		assertFalse("Neighbor shouldn't be traversable", this.tester.neighborCanBeTraversed(gValue, pValue));
+	
 	}
 	
 	@Test 
 	public void testGParentShouldBeSet() {
-		//Structured basis
-				//Data-flow
-				//Boundary
-				//Compound boundaries
-				//Bad data
-				//Good data
-				//Stress Test
+		int gValue = 0;
+		PillarNode current= new PillarNode(0);
+		PillarNode neighbor = new PillarNode(1);
+		this.optimizableMaze = new Maze(4, 4, this.optimizablePlankLayout());
+		tester = this.optimizableMaze.new Test();
+		//Structured basis, dataflow
+		//Case 1: gParent == null
+		assertTrue("New node shouldn't have a gparent", tester.gParentShouldBeSet(neighbor, gValue));
+		//Case 2: neighbor.gValue < 0
+		assertTrue("New node should have an initial gVal of -1", tester.gParentShouldBeSet(neighbor, gValue));
+		//Case 3: gValue < neighbor.gValue (boundary)
+		neighbor.setGValue(3);
+		gValue = 2;
+		assertTrue("Node should have a higher gValue than input", tester.gParentShouldBeSet(neighbor, gValue));
+		//Case 4: All false
+		neighbor.setGParent(current);
+		gValue = 4;
+		assertFalse("Neighbor shouldn't meet any passing conditions", tester.gParentShouldBeSet(neighbor, gValue));
+		
 	}
 	
 	@Test 
